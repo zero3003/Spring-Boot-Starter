@@ -26,18 +26,23 @@ public class GlobalExceptionHandler {
 
         String path = req.getRequestURI();
 
-        // ⭐ Skip handling for Swagger endpoints
+        // Skip Swagger endpoints
         if (path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/swagger-resources") ||
                 path.startsWith("/webjars/")) {
-
-            throw new RuntimeException(ex); // Let SpringDoc handle it
+            throw new RuntimeException(ex);
         }
 
         Map<String, String> errors = new LinkedHashMap<>();
+
+        // Field-level errors
         ex.getBindingResult().getFieldErrors()
                 .forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
+
+        // Class-level (global) errors
+        ex.getBindingResult().getGlobalErrors()
+                .forEach(err -> errors.put(err.getObjectName(), err.getDefaultMessage()));
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("status", 400);
@@ -47,7 +52,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
-     @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiResponse<?>> notFound(EntityNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.error(ex.getMessage()));

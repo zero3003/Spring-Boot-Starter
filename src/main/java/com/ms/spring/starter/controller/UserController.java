@@ -10,12 +10,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.ms.spring.starter.dto.ApiResponse;
+import com.ms.spring.starter.dto.ChangePasswordRequest;
 import com.ms.spring.starter.dto.UserRequest;
 import com.ms.spring.starter.dto.UserResponse;
 import com.ms.spring.starter.service.UserService;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 
 import java.util.Map;
 
@@ -29,7 +31,7 @@ public class UserController {
     private final UserService service;
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody UserRequest req) {
+    public ResponseEntity<?> create(@Valid @RequestBody UserRequest req) {
         try {
             // get user first by username and emai to avoid duplicates
             service.checkUniqueUser(req);
@@ -76,7 +78,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@Parameter(description = "User ID", required = true) @PathVariable("id") Long id,
-            @RequestBody UserRequest req) {
+            @Valid @RequestBody UserRequest req) {
         try {
             service.checkUniqueUserExcept(req, id);
 
@@ -101,4 +103,19 @@ public class UserController {
                     .body(ApiResponse.error("User Delete failed: " + e.getMessage()));
         }
     }
+
+    @PutMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(
+            @Parameter(description = "User ID", required = true) @PathVariable("id") Long id,
+            @Valid @RequestBody ChangePasswordRequest req) {
+        try {
+            service.changePassword(req, id);
+            return ResponseEntity.ok(
+                    ApiResponse.success(null, "Password Changed Successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Change Password failed: " + e.getMessage()));
+        }
+    }
+
 }

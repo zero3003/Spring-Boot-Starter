@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ms.spring.starter.Util.SecurityUtil;
+import com.ms.spring.starter.dto.ChangePasswordRequest;
+import com.ms.spring.starter.dto.ProfileUpdate;
 import com.ms.spring.starter.dto.UserRequest;
 import com.ms.spring.starter.dto.UserResponse;
 import com.ms.spring.starter.entity.Role;
@@ -130,6 +132,30 @@ public class UserServiceImpl implements UserService {
                 .roles(
                         user.getRoles())
                 .build();
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest req, long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(req.getPassword())); // hash password
+
+        userRepo.save(user);
+    }
+
+    @Override
+    public UserResponse updateProfile(ProfileUpdate req, long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        user.setName(req.getName());
+        user.setEmail(req.getEmail());
+        user.setUsername(req.getUsername());
+
+        userRepo.save(user);
+
+        return toResponse(user);
     }
 
 }
