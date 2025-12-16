@@ -131,6 +131,7 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .roles(
                         user.getRoles())
+                .profilePicturePath(user.getProfilePicturePath())
                 .build();
     }
 
@@ -156,6 +157,16 @@ public class UserServiceImpl implements UserService {
         userRepo.save(user);
 
         return toResponse(user);
+    }
+
+    @Override
+    public void updateProfilePicturePath(long userId, String path) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        user.setProfilePicturePath(path);
+
+        userRepo.save(user);
     }
 
 }

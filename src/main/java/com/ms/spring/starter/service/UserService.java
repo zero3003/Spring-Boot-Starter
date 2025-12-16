@@ -19,4 +19,5 @@ public interface UserService {
     void checkUniqueUserExcept(UserRequest req, long excludeId);
     void changePassword(ChangePasswordRequest req, long userId);
     UserResponse updateProfile(ProfileUpdate req, long userId);
+    void updateProfilePicturePath(long userId, String path);
 }

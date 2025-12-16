@@ -44,4 +44,7 @@ public class User extends AuditableEntity {
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+
+    @Column(name = "profile_picture_path")
+    private String profilePicturePath;
 }

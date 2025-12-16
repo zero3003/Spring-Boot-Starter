@@ -65,4 +65,9 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().body(
+                Map.of("message", ex.getMessage()));
+    }
 }

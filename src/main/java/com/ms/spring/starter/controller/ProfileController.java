@@ -1,18 +1,22 @@
 package com.ms.spring.starter.controller;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ms.spring.starter.Util.SecurityUtil;
 import com.ms.spring.starter.dto.ApiResponse;
 import com.ms.spring.starter.dto.ChangePasswordRequest;
+import com.ms.spring.starter.dto.FileUploadResponse;
 import com.ms.spring.starter.dto.ProfileUpdate;
 import com.ms.spring.starter.dto.UserRequest;
 import com.ms.spring.starter.dto.UserResponse;
+import com.ms.spring.starter.service.FileStorageService;
 import com.ms.spring.starter.service.UserService;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class ProfileController {
 
     private final UserService service;
+    private final FileStorageService fileStorageService;
 
     @GetMapping()
     public ResponseEntity<?> get() {
@@ -76,5 +81,22 @@ public class ProfileController {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Change Password failed: " + e.getMessage()));
         }
+    }
+
+    @PostMapping(
+            value = "/upload-profile-picture",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<?> uploadFile(
+            @Parameter(required = true)
+            @RequestParam("file") MultipartFile file) {
+
+        FileUploadResponse response = fileStorageService.storeFile(file);
+
+        Long userId = SecurityUtil.currentUserId();
+        service.updateProfilePicturePath(userId, response.getFileName());
+
+        return ResponseEntity.ok(
+                    ApiResponse.success(response, "Profile Changed Successfully"));
     }
 }
